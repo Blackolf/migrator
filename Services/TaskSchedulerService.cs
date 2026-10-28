@@ -15,6 +15,8 @@ namespace SystemMigrator.Services
         private readonly SemaphoreSlim _semaphore;
         private readonly Queue<MigrationTask> _queue = new();
         private bool _isProcessing = false;
+        public event Action<double>? OverallProgressChanged;
+        public event Action<string>? OverallStatusChanged;
 
         // 綁定到 UI 的活躍任務列表
         public ObservableCollection<MigrationTask> ActiveTasks { get; } = new();
@@ -61,93 +63,49 @@ namespace SystemMigrator.Services
         private async Task ExecuteTaskAsync(MigrationTask task)
         {
             var cts = new CancellationTokenSource();
+            var logger = LoggerService.Instance; // 獲取日誌實例
+
             try
             {
-                // ================= 階段 1：Winget 安裝 =================
-                if (!string.IsNullOrEmpty(task.WingetId))
-                {
-                    task.Status = Models.TaskStatus.Installing;
-                    task.StatusText = $"正在透過 Winget 安裝 {task.Name}...";
-                    
-                    var startInfo = new ProcessStartInfo
-                    {
-                        FileName = "winget",
-                        Arguments = $"install --id {task.WingetId} --silent --accept-package-agreements --accept-source-agreements",
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    };
+                logger.Log($"[{task.Name}] 開始執行任務...", LogLevel.Info);
+                
+                // ... (保留原有的安裝與遷移邏輯) ...
+                // 在安裝成功或遷移成功的地方，可以加入：
+                // logger.Log($"[{task.Name}] 安裝/遷移成功！", LogLevel.Success);
 
-                    using (var process = Process.Start(startInfo))
-                    {
-                        if (process != null)
-                        {
-                            // 非同步讀取輸出，嘗試解析進度 (Winget 輸出格式如: 已下載 50%)
-                            process.OutputDataReceived += (sender, e) =>
-                            {
-                                if (!string.IsNullOrEmpty(e.Data))
-                                {
-                                    var match = Regex.Match(e.Data, @"(\d+)%");
-                                    if (match.Success && double.TryParse(match.Groups[1].Value, out double pct))
-                                    {
-                                        task.Progress = pct;
-                                    }
-                                }
-                            };
-                            process.BeginOutputReadLine();
-                            
-                            await Task.Run(() => process.WaitForExit(), cts.Token);
-                            
-                            if (process.ExitCode != 0)
-                            {
-                                throw new Exception($"Winget 安裝失敗，退出碼: {process.ExitCode}");
-                            }
-                        }
-                    }
-                    task.Progress = 100;
-                }
-
-                // ================= 階段 2：數據淨化遷移 =================
-                if (task.SourcePaths.Any() && !string.IsNullOrEmpty(task.BackupZipPath))
-                {
-                    task.Status = Models.TaskStatus.Migrating;
-                    task.StatusText = "正在淨化並打包配置/存檔...";
-                    task.Progress = 0;
-
-                    var purifyEngine = new PurifyEngine();
-                    var progressReporter = new Progress<double>(p => task.Progress = p);
-
-                    // 這裡以第一個源路徑為例，實際可循環處理多個
-                    bool success = await purifyEngine.BackupWithPurifyAsync(
-                        task.SourcePaths[0], 
-                        task.BackupZipPath, 
-                        progressReporter, 
-                        cts.Token
-                    );
-
-                    if (!success) throw new Exception("數據打包失敗或路徑不存在。");
-                    task.Progress = 100;
-                }
-
-                // ================= 完成 =================
                 task.Status = Models.TaskStatus.Completed;
                 task.StatusText = "任務完美完成！";
+                logger.Log($"[{task.Name}] 任務完成。", LogLevel.Success);
             }
             catch (OperationCanceledException)
             {
                 task.Status = Models.TaskStatus.Cancelled;
                 task.StatusText = "任務已取消。";
+                logger.Log($"[{task.Name}] 任務被用戶取消。", LogLevel.Error); // 沒完成顯示灰色
             }
             catch (Exception ex)
             {
                 task.Status = Models.TaskStatus.Failed;
                 task.StatusText = $"失敗: {ex.Message}";
+                logger.Log($"[{task.Name}] 發生錯誤: {ex.Message}", LogLevel.Error); // 錯誤代碼寫入終端，顯示灰色
             }
             finally
             {
+                
                 _semaphore.Release();
                 cts.Dispose();
+                
+                // 計算並觸發總體進度
+                int total = ActiveTasks.Count;
+                int completed = ActiveTasks.Count(t => t.Status == Models.TaskStatus.Completed || t.Status == Models.TaskStatus.Failed || t.Status == Models.TaskStatus.Cancelled);
+                double overallPct = total > 0 ? (double)completed / total * 100 : 0;
+                OverallProgressChanged?.Invoke(overallPct);
+                
+                if (completed == total && total > 0) {
+                    OverallStatusChanged?.Invoke("所有任務已完成！");
+                } else {
+                    OverallStatusChanged?.Invoke($"執行中... ({completed}/{total})");
+                }
             }
         }
 

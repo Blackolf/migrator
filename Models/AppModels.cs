@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -7,7 +8,6 @@ namespace SystemMigrator.Models
 {
     public enum TaskStatus { Pending, Downloading, Installing, Migrating, Completed, Failed, Cancelled }
 
-    // 掃描到的已安裝軟體
     public class InstalledApp
     {
         public string DisplayName { get; set; } = "";
@@ -16,9 +16,10 @@ namespace SystemMigrator.Models
         public string IconPath { get; set; } = "";
         public ImageSource? IconImage { get; set; }
         public bool IsSelected { get; set; }
+        // 新增：分類
+        public string Category { get; set; } = "常用軟體"; 
     }
 
-    // 掃描到的備份項目 (配置/存檔)
     public class BackupItem
     {
         public string Name { get; set; } = "";
@@ -26,12 +27,14 @@ namespace SystemMigrator.Models
         public string Category { get; set; } = "";
         public bool IsSelected { get; set; }
         public long SizeInMB { get; set; }
+        // 新增：上次備份時間
+        public DateTime? LastBackupTime { get; set; } 
     }
 
-    // 任務調度模型
+    // MigrationTask 保持不變...
     public class MigrationTask : INotifyPropertyChanged
     {
-        public string Id { get; set; } = System.Guid.NewGuid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; } = "未知任務";
         public string WingetId { get; set; } = "";
         public string DownloadUrl { get; set; } = "";
