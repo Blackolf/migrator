@@ -1,9 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
 using SystemMigrator.Models;
 using SystemMigrator.Services;
@@ -15,19 +13,15 @@ namespace SystemMigrator
         private readonly ScannerService _scanner = new();
         private readonly TaskSchedulerService _scheduler = new(3);
         private readonly SteamResolver _steamResolver = new();
-        private readonly LoggerService _logger = LoggerService.Instance;
 
         public MainWindow()
         {
             InitializeComponent();
             TasksItemsControl.ItemsSource = _scheduler.ActiveTasks;
-            
-            // 綁定日誌到 UI
-            var logControl = FindName("LogScrollViewer") as ScrollViewer;
-            if (logControl?.Content is ItemsControl itemsControl)
-            {
-                itemsControl.ItemsSource = _logger.Logs;
-            }
+
+            // 【核心修復】訂閱 Model 的靜態事件，實現自動刷新分組計數
+            InstalledApp.SelectionChanged += RefreshViews;
+            BackupItem.SelectionChanged += RefreshViews;
 
             _scheduler.OverallProgressChanged += pct => Dispatcher.Invoke(() => PbOverall.Value = pct);
             _scheduler.OverallStatusChanged += msg => Dispatcher.Invoke(() => TxtOverallStatus.Text = msg);
@@ -37,61 +31,18 @@ namespace SystemMigrator
 
             string steamPath = @"C:\Program Files (x86)\Steam\steamapps";
             if (Directory.Exists(steamPath)) _steamResolver.Initialize(steamPath);
-
-            _logger.Log("系統遷移大師已啟動，等待掃描...", LogLevel.Info);
         }
 
-        // 軟體列表：全選
-        private void BtnSelectAllApps_Click(object sender, RoutedEventArgs e)
+        // 統一刷新視圖的方法
+        private void RefreshViews()
         {
-            if (LstApps.ItemsSource is ListCollectionView view)
+            Dispatcher.Invoke(() =>
             {
-                foreach (var item in view.SourceCollection.Cast<InstalledApp>())
-                {
-                    item.IsSelected = true;
-                }
-                view.Refresh(); // 刷新以更新分組計數
-            }
+                (LstApps.ItemsSource as ICollectionView)?.Refresh();
+                (LstBackups.ItemsSource as ICollectionView)?.Refresh();
+            });
         }
 
-        // 軟體列表：全不選
-        private void BtnSelectNoneApps_Click(object sender, RoutedEventArgs e)
-        {
-            if (LstApps.ItemsSource is ListCollectionView view)
-            {
-                foreach (var item in view.SourceCollection.Cast<InstalledApp>())
-                {
-                    item.IsSelected = false;
-                }
-                view.Refresh();
-            }
-        }
-
-        // 備份列表：全選
-        private void BtnSelectAllBackups_Click(object sender, RoutedEventArgs e)
-        {
-            if (LstBackups.ItemsSource is ListCollectionView view)
-            {
-                foreach (var item in view.SourceCollection.Cast<BackupItem>())
-                {
-                    item.IsSelected = true;
-                }
-                view.Refresh();
-            }
-        }
-
-        // 備份列表：全不選
-        private void BtnSelectNoneBackups_Click(object sender, RoutedEventArgs e)
-        {
-            if (LstBackups.ItemsSource is ListCollectionView view)
-            {
-                foreach (var item in view.SourceCollection.Cast<BackupItem>())
-                {
-                    item.IsSelected = false;
-                }
-                view.Refresh();
-            }
-        }
         private void BtnScan_Click(object sender, RoutedEventArgs e)
         {
             string backupDir = TxtBackupDir.Text;
@@ -99,7 +50,6 @@ namespace SystemMigrator
 
             TxtGlobalStatus.Text = "正在掃描系統...";
             BtnScan.IsEnabled = false;
-            _logger.Log("開始掃描系統註冊表與目錄...", LogLevel.Info);
 
             var apps = _scanner.ScanInstalledApps();
             var appsView = new ListCollectionView(apps);
@@ -113,7 +63,9 @@ namespace SystemMigrator
 
             TxtGlobalStatus.Text = $"掃描完成！找到 {apps.Count} 個軟體，{backups.Count} 個備份項。";
             BtnScan.IsEnabled = true;
-            _logger.Log($"掃描完成：發現 {apps.Count} 個軟體，{backups.Count} 個數據項。", LogLevel.Success);
+            
+            // 掃描完成後手動刷新一次，確保初始狀態的計數正確
+            RefreshViews(); 
         }
 
         private void BtnExecute_Click(object sender, RoutedEventArgs e)
@@ -154,13 +106,52 @@ namespace SystemMigrator
 
             TxtGlobalStatus.Text = "任務已加入隊列，正在並行執行...";
             TxtOverallStatus.Text = "執行中... (0/0)";
-            _logger.Log($"已生成 {taskCount} 個任務，開始並行調度...", LogLevel.Success);
         }
 
-        private void BtnClearLog_Click(object sender, RoutedEventArgs e)
+        // ================= 全選/全不選按鈕邏輯 (已簡化) =================
+        
+        private void BtnSelectAllApps_Click(object sender, RoutedEventArgs e)
         {
-            _logger.Clear();
-            _logger.Log("終端日誌已清除。", LogLevel.Info);
+            if (LstApps.ItemsSource is ListCollectionView view)
+            {
+                foreach (var item in view.SourceCollection.Cast<InstalledApp>())
+                {
+                    item.IsSelected = true; // 現在這行代碼會自動觸發 SelectionChanged 並 Refresh
+                }
+            }
+        }
+
+        private void BtnSelectNoneApps_Click(object sender, RoutedEventArgs e)
+        {
+            if (LstApps.ItemsSource is ListCollectionView view)
+            {
+                foreach (var item in view.SourceCollection.Cast<InstalledApp>())
+                {
+                    item.IsSelected = false; // 現在這行代碼也能完美取消 UI 上的勾選了！
+                }
+            }
+        }
+
+        private void BtnSelectAllBackups_Click(object sender, RoutedEventArgs e)
+        {
+            if (LstBackups.ItemsSource is ListCollectionView view)
+            {
+                foreach (var item in view.SourceCollection.Cast<BackupItem>())
+                {
+                    item.IsSelected = true;
+                }
+            }
+        }
+
+        private void BtnSelectNoneBackups_Click(object sender, RoutedEventArgs e)
+        {
+            if (LstBackups.ItemsSource is ListCollectionView view)
+            {
+                foreach (var item in view.SourceCollection.Cast<BackupItem>())
+                {
+                    item.IsSelected = false;
+                }
+            }
         }
     }
 }

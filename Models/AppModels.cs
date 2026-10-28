@@ -10,30 +10,70 @@ namespace SystemMigrator.Models
 {
     public enum TaskStatus { Pending, Downloading, Installing, Migrating, Completed, Failed, Cancelled }
 
-    public class InstalledApp
+    public class InstalledApp : INotifyPropertyChanged
     {
         public string DisplayName { get; set; } = "";
         public string InstallLocation { get; set; } = "";
         public string UninstallString { get; set; } = "";
         public string IconPath { get; set; } = "";
         public ImageSource? IconImage { get; set; }
-        public bool IsSelected { get; set; }
-        // 新增：分類
-        public string Category { get; set; } = "常用軟體"; 
+        public string Category { get; set; } = "常用軟體";
+
+        // 靜態事件：當任何一個軟體的勾選狀態改變時觸發
+        public static event Action? SelectionChanged;
+
+        private bool _isSelected;
+        public bool IsSelected 
+        { 
+            get => _isSelected; 
+            set 
+            { 
+                if (_isSelected != value)
+                {
+                    _isSelected = value; 
+                    OnPropertyChanged();
+                    // 觸發靜態事件，通知 UI 刷新分組計數
+                    SelectionChanged?.Invoke(); 
+                }
+            } 
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    public class BackupItem
+    // ================= 備份項目模型 =================
+    public class BackupItem : INotifyPropertyChanged
     {
         public string Name { get; set; } = "";
         public string SourcePath { get; set; } = "";
         public string Category { get; set; } = "";
-        public bool IsSelected { get; set; }
         public long SizeInMB { get; set; }
-        // 新增：上次備份時間
-        public DateTime? LastBackupTime { get; set; } 
-    }
+        public DateTime? LastBackupTime { get; set; }
 
-    // MigrationTask 保持不變...
+        // 靜態事件
+        public static event Action? SelectionChanged;
+
+        private bool _isSelected;
+        public bool IsSelected 
+        { 
+            get => _isSelected; 
+            set 
+            { 
+                if (_isSelected != value)
+                {
+                    _isSelected = value; 
+                    OnPropertyChanged();
+                    SelectionChanged?.Invoke();
+                }
+            } 
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
     public class MigrationTask : INotifyPropertyChanged
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
