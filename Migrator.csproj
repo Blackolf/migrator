@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF> <!-- 這一行必須存在，否則 XAML 不會生成 C# 代碼 -->
+    <ApplicationManifest>app.manifest</ApplicationManifest> <!-- 確保有管理員權限設定 -->
+  </PropertyGroup>
+
+</Project>
