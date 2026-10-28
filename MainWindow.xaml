@@ -1,0 +1,93 @@
+<Window x:Class="SystemMigrator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="系統遷移與淨化大師 V1.0" Height="750" Width="1100" 
+        WindowStartupLocation="CenterScreen" Background="#F3F4F6">
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左側：掃描與選擇區 -->
+        <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="15">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="1. 掃描與選擇" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+                    
+                    <Button x:Name="BtnScan" Content="掃描系統軟體與存檔" Height="40" Background="#007ACC" Foreground="White" FontSize="14" Click="BtnScan_Click" Margin="0,0,0,15"/>
+                    
+                    <TextBlock Text="已安裝軟體 (勾選以重新安裝)" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <ListBox x:Name="LstApps" Height="150" Margin="0,0,0,15" BorderThickness="1" BorderBrush="#E0E0E0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding DisplayName}" IsChecked="{Binding IsSelected}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock Text="數據備份/還原 (勾選以遷移)" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                    <ListBox x:Name="LstBackups" Height="150" Margin="0,0,0,15" BorderThickness="1" BorderBrush="#E0E0E0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <CheckBox IsChecked="{Binding IsSelected}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                    <TextBlock Text="{Binding SizeInMB, StringFormat={}{0} MB}" Foreground="Gray" FontSize="11" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock Text="備份存放目錄:" Margin="0,0,0,5"/>
+                    <TextBox x:Name="TxtBackupDir" Text="D:\SystemMigrator_Backups" Margin="0,0,0,15"/>
+
+                    <Button x:Name="BtnExecute" Content="開始一鍵執行任務" Height="45" Background="#28A745" Foreground="White" FontSize="16" FontWeight="Bold" Click="BtnExecute_Click"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- 右側：任務執行卡片區 -->
+        <Border Grid.Column="2" Background="White" CornerRadius="10" Padding="15">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Margin="0,0,0,15">
+                    <TextBlock Text="2. 任務執行中心" FontSize="18" FontWeight="Bold"/>
+                    <TextBlock x:Name="TxtGlobalStatus" Text="等待任務..." Foreground="#666" Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="TasksItemsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8" Margin="0,0,0,10" Padding="15">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding StatusDisplayText}" Foreground="#007ACC" FontWeight="Bold"/>
+                                        
+                                        <ProgressBar Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Height="10" Margin="0,10,0,5" Value="{Binding Progress}" Maximum="100" Foreground="#007ACC"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding StatusText}" FontSize="12" Foreground="#6B7280"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

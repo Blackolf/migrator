@@ -1,0 +1,44 @@
+# ==========================================
+# C# / .NET / WPF 專案標準忽略清單
+# ==========================================
+
+# 編譯輸出與中繼檔案 (最重要)
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+# 自訂的發佈與安裝包輸出目錄
+publish/
+installer_output/
+
+# Visual Studio / VS Code 的個人設定與快取
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# NuGet 套件快取 (避免將幾百MB的套件上傳)
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+# 測試結果
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# 系統產生的隱藏檔案
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# 備份目錄 (防止不小心把備份的ZIP檔上傳)
+SystemMigrator_Backups/
+*.zip
