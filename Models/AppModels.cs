@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Media;
 
 namespace SystemMigrator.Models
@@ -45,6 +47,11 @@ namespace SystemMigrator.Models
         public string BackupZipPath { get; set; } = "";
         public bool IsBackupMode { get; set; } = true;
 
+        // --- 新增：時間與日誌 ---
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
+        public ObservableCollection<LogEntry> Logs { get; } = new();
+
         private TaskStatus _status = TaskStatus.Pending;
         public TaskStatus Status { get => _status; set { _status = value; OnPropertyChanged(); OnPropertyChanged(nameof(StatusDisplayText)); } }
 
@@ -60,6 +67,15 @@ namespace SystemMigrator.Models
             TaskStatus.Migrating => "遷移中", TaskStatus.Completed => "已完成", TaskStatus.Failed => "失敗",
             TaskStatus.Cancelled => "已取消", _ => "未知"
         };
+
+        // 封裝日誌寫入方法，確保在 UI 執行緒更新
+        public void AddLog(string message, LogLevel level = LogLevel.Info)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Logs.Add(new LogEntry { Message = message, Level = level });
+            });
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
