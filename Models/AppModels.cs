@@ -87,6 +87,9 @@ namespace SystemMigrator.Models
         public string BackupZipPath { get; set; } = "";
         public bool IsBackupMode { get; set; } = true;
 
+        /// <summary>true 表示這是「安裝軟體」任務；false 表示純資料遷移任務。</summary>
+        public bool IsInstallTask { get; set; }
+
         // --- 新增：時間與日誌 ---
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }

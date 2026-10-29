@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -8,8 +8,17 @@
     <UseWPF>true</UseWPF> <!-- 這一行必須存在，否則 XAML 不會生成 C# 代碼 -->
     <ApplicationManifest>app.manifest</ApplicationManifest> <!-- 確保有管理員權限設定 -->
 
-    <Version>1.0.2</Version>
-    <AssemblyVersion>1.0.2.0</AssemblyVersion>
-    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.3</Version>
+    <AssemblyVersion>1.0.3.0</AssemblyVersion>
+    <FileVersion>1.0.3.0</FileVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 鏡像設定檔：隨建置與 publish 一起複製到輸出目錄的 Config\ 下 -->
+    <None Update="Config\mirrors.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

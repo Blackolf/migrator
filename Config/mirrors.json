@@ -1,0 +1,130 @@
+{
+  "_note": "下載鏡像源設定。修改後重新啟動程式生效。國內鏡像失效時：把該來源的 enabled 改為 false，或修正下方 URL。版本號更新時請同步更新 officialUrl / mirrors / fileName。",
+  "defaultMode": "Auto",
+  "sources": [
+    {
+      "id": "official",
+      "name": "官方源",
+      "region": "Official",
+      "priority": 100,
+      "enabled": true
+    },
+    {
+      "id": "npmmirror",
+      "name": "npmmirror（阿里）",
+      "region": "Domestic",
+      "priority": 10,
+      "enabled": true
+    },
+    {
+      "id": "huaweicloud",
+      "name": "華為雲鏡像",
+      "region": "Domestic",
+      "priority": 20,
+      "enabled": true
+    },
+    {
+      "id": "tuna",
+      "name": "清華 TUNA",
+      "region": "Domestic",
+      "priority": 30,
+      "enabled": true
+    },
+    {
+      "id": "ustc",
+      "name": "中科大 USTC",
+      "region": "Domestic",
+      "priority": 40,
+      "enabled": true
+    }
+  ],
+  "packages": [
+    {
+      "key": "git",
+      "displayName": "Git for Windows",
+      "wingetId": "Git.Git",
+      "officialUrl": "https://github.com/git-for-windows/git/releases/download/v2.47.1.windows.1/Git-2.47.1-64-bit.exe",
+      "fileName": "Git-2.47.1-64-bit.exe",
+      "silentArgs": "/VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS",
+      "mirrors": {
+        "npmmirror": "https://registry.npmmirror.com/-/binary/git-for-windows/v2.47.1.windows.1/Git-2.47.1-64-bit.exe",
+        "tuna": "https://mirrors.tuna.tsinghua.edu.cn/github-release/git-for-windows/git/LatestRelease/Git-2.47.1-64-bit.exe"
+      }
+    },
+    {
+      "key": "nodejs",
+      "displayName": "Node.js",
+      "wingetId": "OpenJS.NodeJS.LTS",
+      "officialUrl": "https://nodejs.org/dist/v22.11.0/node-v22.11.0-x64.msi",
+      "fileName": "node-v22.11.0-x64.msi",
+      "silentArgs": "",
+      "mirrors": {
+        "npmmirror": "https://registry.npmmirror.com/-/binary/node/v22.11.0/node-v22.11.0-x64.msi",
+        "huaweicloud": "https://mirrors.huaweicloud.com/nodejs/v22.11.0/node-v22.11.0-x64.msi",
+        "tuna": "https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/v22.11.0/node-v22.11.0-x64.msi"
+      }
+    },
+    {
+      "key": "python",
+      "displayName": "Python",
+      "wingetId": "Python.Python.3.12",
+      "officialUrl": "https://www.python.org/ftp/python/3.12.8/python-3.12.8-amd64.exe",
+      "fileName": "python-3.12.8-amd64.exe",
+      "silentArgs": "/quiet InstallAllUsers=1 PrependPath=1 Include_test=0",
+      "mirrors": {
+        "huaweicloud": "https://mirrors.huaweicloud.com/python/3.12.8/python-3.12.8-amd64.exe",
+        "npmmirror": "https://registry.npmmirror.com/-/binary/python/3.12.8/python-3.12.8-amd64.exe"
+      }
+    },
+    {
+      "key": "vlc",
+      "displayName": "VLC media player",
+      "wingetId": "VideoLAN.VLC",
+      "officialUrl": "https://get.videolan.org/vlc/3.0.21/win64/vlc-3.0.21-win64.exe",
+      "fileName": "vlc-3.0.21-win64.exe",
+      "silentArgs": "/L=1033 /S",
+      "mirrors": {
+        "tuna": "https://mirrors.tuna.tsinghua.edu.cn/videolan-ftp/vlc/3.0.21/win64/vlc-3.0.21-win64.exe",
+        "ustc": "https://mirrors.ustc.edu.cn/videolan-ftp/vlc/3.0.21/win64/vlc-3.0.21-win64.exe"
+      }
+    },
+    {
+      "key": "7zip",
+      "displayName": "7-Zip",
+      "wingetId": "7zip.7zip",
+      "officialUrl": "https://www.7-zip.org/a/7z2409-x64.exe",
+      "fileName": "7z2409-x64.exe",
+      "silentArgs": "/S",
+      "mirrors": {
+        "tuna": "https://mirrors.tuna.tsinghua.edu.cn/7-zip/7z2409-x64.exe"
+      }
+    },
+    {
+      "key": "vscode",
+      "displayName": "Visual Studio Code",
+      "wingetId": "Microsoft.VisualStudioCode",
+      "officialUrl": "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user",
+      "fileName": "VSCodeUserSetup-x64.exe",
+      "silentArgs": "/VERYSILENT /NORESTART /MERGETASKS=!runcode",
+      "mirrors": {}
+    },
+    {
+      "key": "chrome",
+      "displayName": "Google Chrome",
+      "wingetId": "Google.Chrome",
+      "officialUrl": "https://dl.google.com/tag/s/dl/chrome/install/googlechromestandaloneenterprise64.msi",
+      "fileName": "googlechromestandaloneenterprise64.msi",
+      "silentArgs": "",
+      "mirrors": {}
+    },
+    {
+      "key": "firefox",
+      "displayName": "Mozilla Firefox",
+      "wingetId": "Mozilla.Firefox",
+      "officialUrl": "https://download.mozilla.org/?product=firefox-latest-ssl&os=win64&lang=zh-TW",
+      "fileName": "firefox-latest-win64.exe",
+      "silentArgs": "-ms",
+      "mirrors": {}
+    }
+  ]
+}
